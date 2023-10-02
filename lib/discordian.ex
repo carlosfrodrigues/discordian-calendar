@@ -10,7 +10,7 @@ defmodule Discordian do
   def to_gregorian({dy, dm, dd}) do
     year = dy - 1166
     day_of_year = 73*(dm-1) + dd
-    real_day_year = 
+    real_day_year =
       case is_leap_year(year) and (dm == 1 and dd >= 60) or dm > 1 do
         true -> day_of_year+1
         false -> day_of_year
@@ -22,7 +22,7 @@ defmodule Discordian do
   def is_leap_year(year) when year == 0, do: false
   def is_leap_year(year) when year != 0 do
     cond do
-      rem(year,4) == 0 and 
+      rem(year,4) == 0 and
       rem(year, 100) == 0 and
       rem(year, 400) == 0 ->
         true
@@ -34,12 +34,11 @@ defmodule Discordian do
     end
   end
 
-  def discordian_day_year(year, month, day) do
-    day_previous_month = (month-1)*73
-    case ((is_leap_year(year) and month == 1 and day >= 60) or (month >= 1)) do
-      true -> day_previous_month + 1 + day
-      false -> day_previous_month + day
-    end
+  @spec discordian_day_year(year :: non_neg_integer(), season :: non_neg_integer(), day :: non_neg_integer()) :: non_neg_integer()
+  def discordian_day_year(_, season, day)
+      when season >= 1 and season <= 5 and day >= 1 and day <= 73 do
+    days_per_season = 73
+    (season - 1) * days_per_season + day
   end
 
   @doc """
@@ -70,10 +69,10 @@ defmodule Discordian do
   end
 
 
-  #This function uses search interpolation. It was based on the function with the same name on the 
+  #This function uses search interpolation. It was based on the function with the same name on the
   #Erlang/OTP code calendar.erl
   #https://github.com/erlang/otp/blob/master/lib/stdlib/src/calendar.erl
-  
+
   defp day_to_year(days) when days >= 0 do
     year_max = div(days, @days_per_year)
     year_min = div(days, @days_per_leap_year)
@@ -86,7 +85,7 @@ defmodule Discordian do
   defp dty(min, max, d1, dmin, dmax) do
     diff = max - min
     mid = min + div((diff*(d1 - dmin)), dmax - dmin)
-    mid_length = 
+    mid_length =
       case is_leap_year(mid) do
         true -> @days_per_leap_year
         false -> @days_per_year
@@ -102,7 +101,7 @@ defmodule Discordian do
         {mid, d2}
     end
   end
-  
+
   #return the days in previous years
   defp dy(year) when year <= 0, do: 0
   defp dy(year) do
@@ -121,22 +120,8 @@ defmodule Discordian do
   end
 
   #return the total number of days in all months
-  defp dm(month) do
-    case month do
-      1 -> 0
-      2 -> 31
-      3 -> 59
-      4 -> 90
-      5 -> 120
-      6 -> 151
-      7 -> 181
-      8 -> 212
-      9 -> 243
-      10 -> 273
-      11 -> 304
-      12 -> 334
-      _ -> 0
-    end
+  defp dm(month) when month >= 1 and month <= 12 do
+    (month - 1) * 30 + div(month - 2, 2)
   end
 
   defp year_day_to_date(year, day_of_year) do

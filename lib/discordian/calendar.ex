@@ -9,7 +9,7 @@ defmodule Discordian.Calendar do
   @type minute :: 0..59
   @type second :: 0..60
   @type microsecond :: Integer.t()
-
+  @days_of_week ~w(Sweetmorn Boomtime Pungenday Prickle-Prickle Setting_Orange)
   @seconds_per_minute 60
   @seconds_per_hour 60*60
   @seconds_per_day 24*60*60
@@ -70,16 +70,16 @@ defmodule Discordian.Calendar do
   Calculates the day of the week from the given year, month, and day.
   """
   @impl true
-  @spec day_of_week(year, month, day) :: day_of_week
-  def day_of_week(year, month, day) do
-    if leap_year?(year) and month == 1 and day == 1 do
-      0
-    else
-      case rem(day_of_year(year, month, day), 5) do
-        0 -> 5
-        x -> x
-      end
-    end
+  @spec day_of_week(year :: integer, month :: integer, day :: integer, :default | atom()) :: String.t()
+  def day_of_week(year, month, day, :default) when is_integer(year) and is_integer(month) and is_integer(day) do
+    day_of_year(year, month, day) - 1
+    |> rem(5)
+    |> day_of_week_name()
+  end
+
+
+  defp day_of_week_name(day_number) do
+    Enum.at(@days_of_week, day_number)
   end
 
   @doc """
@@ -96,7 +96,7 @@ defmodule Discordian.Calendar do
   """
   @impl true
   def day_rollover_relative_to_midnight_utc(), do: {0,1}
-    
+
   @doc """
   Returns how many days there are in the given year-month.
   """
@@ -130,7 +130,7 @@ defmodule Discordian.Calendar do
     {hour, minute, second, microsecond} = time_from_day_fraction(day_fraction)
     {year, month, day, hour, minute, second, microsecond}
   end
- 
+
   @doc """
   Converts the given datetime (without time zone) into the iso_days/0 format.
   """
@@ -153,8 +153,7 @@ defmodule Discordian.Calendar do
   Converts the datetime (without time zone) into a string according to the calendar.
   """
   @impl true
-  @spec naive_datetime_to_string(year, month, day, hour, minute, second, microsecond) ::
-    String.t()
+  @spec naive_datetime_to_string(year, month, day, hour, minute, second, microsecond) :: String.t()
   def naive_datetime_to_string(year, month, day, hour, minute, second, microsecond) do
     date_to_string(year, month, day) <> " " <> time_to_string(hour, minute, second, microsecond)
   end
@@ -229,7 +228,7 @@ defmodule Discordian.Calendar do
 
     {seconds, microseconds} = {div(rest_microseconds2, @microseconds_per_second),
                               rem(rest_microseconds2, @microseconds_per_second)}
-        
+
     {hours, minutes, seconds, {microseconds, 6}}
   end
 
@@ -245,7 +244,7 @@ defmodule Discordian.Calendar do
   ) :: Calendar.day_fraction()
   def time_to_day_fraction(hour, minute, second, {microsecond, _}) do
     combined_seconds = hour * @seconds_per_hour + minute * @seconds_per_minute + second
-    
+
     {combined_seconds * @microseconds_per_second + microsecond,
       @seconds_per_day * @microseconds_per_second}
   end
@@ -257,7 +256,7 @@ defmodule Discordian.Calendar do
   def time_to_string(hour, minute, second, microsecond) do
     Integer.to_string(hour) <> ":" <> Integer.to_string(minute) <> ":" <> Integer.to_string(second) <> ":" <> Integer.to_string(microsecond)
   end
-    
+
   @doc """
   Should return true if the given date describes a proper date in the calendar.
   """
