@@ -2,7 +2,7 @@ defmodule Discordian.CalendarTest do
   use ExUnit.Case
   doctest Discordian.Calendar
 
-  @valid_year 2023
+  @valid_year 3189
   @valid_season 3
   @valid_day 36
 
