@@ -107,7 +107,7 @@ defmodule Discordian do
   defp dy(year) do
     previous_year = year - 1
     div(previous_year, 4) - div(previous_year, 100) + div(previous_year, 400) +
-      previous_year*@days_per_year + @days_per_leap_year
+      previous_year*@days_per_year
   end
 
   #acount extra day if leap year in gregorian calendar
